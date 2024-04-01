@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { UserButton } from "@clerk/nextjs";
 
 const DashboardPage = () => {
   return (
@@ -10,6 +11,7 @@ const DashboardPage = () => {
       <Button variant="destructive" size="lg">
         Click me
       </Button>
+      <UserButton afterSignOutUrl="/" />
     </>
   );
 };
