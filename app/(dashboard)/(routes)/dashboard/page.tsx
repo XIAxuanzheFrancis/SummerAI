@@ -11,7 +11,7 @@ const DashboardPage = () => {
       <Button variant="destructive" size="lg">
         Click me
       </Button>
-      <UserButton afterSignOutUrl="/" />
+      {/* <UserButton afterSignOutUrl="/" /> */}
     </>
   );
 };
