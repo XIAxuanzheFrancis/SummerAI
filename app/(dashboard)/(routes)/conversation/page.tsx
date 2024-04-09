@@ -1,8 +1,12 @@
 "use client";
+
+import axios from "axios";
 import { Heading } from "@/components/heading";
 import { MessageSquare } from "lucide-react";
-
+import {useRouter} from "next/navigation";
 import { useForm } from "react-hook-form";
+import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import { useState } from "react";
 
 import * as z from "zod";
 import { formSchema } from "./constants";
@@ -12,6 +16,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 const ConversationPage = () => {
+  const router = useRouter();
+  const [messages, setMessages] = useState<ChatCompletionMessageParam[]>([]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -22,7 +29,22 @@ const ConversationPage = () => {
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    console.log(data);
+    try{
+      const userMessage: ChatCompletionMessageParam = {
+        role: "user",
+        content: data.prompt,
+      };
+      const newMessage = [...messages, userMessage];
+      const response = await axios.post("/api/conversation", {
+        messages: newMessage,
+      });
+      setMessages((current)=>[...current, userMessage, response.data])
+      form.reset();
+    }catch(error: any){
+      console.log(data);
+    }finally{
+      router.refresh();
+    }
   };
 
   return (
@@ -68,7 +90,23 @@ const ConversationPage = () => {
             </form>
           </Form>
         </div>
-        <div className="mx-10 space-y-10 mt-10">Messages Content</div>
+        <div className="mx-10 space-y-10 mt-10">
+          <div className="flex flex-col-reverse gap-y-4">
+          {messages.map((message, index) => (
+            <div key={index}>
+              {Array.isArray(message.content)
+                ? message.content.map((part, partIndex) => {
+                    if ("text" in part) {
+                      return <span key={partIndex}>{part.text}</span>;
+                    } else {
+                      return null;
+                    }
+                  })
+                : message.content}
+            </div>
+          ))}
+          </div>
+        </div>
       </div>
     </>
   );
