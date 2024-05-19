@@ -16,9 +16,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Empty } from "@/components/empty";
 import { Loader } from "@/components/loader";
-import {cn} from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
-import { BotAvatar } from "@/components/bot-avator";
+import { BotAvatar } from "@/components/bot-avatar";
 
 const ConversationPage = () => {
   const router = useRouter();
@@ -108,20 +108,28 @@ const ConversationPage = () => {
           )}
           <div className="flex flex-col-reverse gap-y-4">
             {messages.map((message, index) => (
-              <div key={index} >
-                <div className={cn("p-8 w-full flex item-start gap-x-8 round-lg",
-                message.role ==="user" ? "bg-white border border-black/10" : "bg-muted")}>
-                  {message.role === "user" ? <UserAvatar/> : <BotAvatar/>}
-                {Array.isArray(message.content)
-                  ? message.content.map((part, partIndex) => {
-                      if ("text" in part) {
-                        return <span key={partIndex}>{part.text}</span>;
-                      } else {
-                        return null;
-                      }
-                    })
-                  : message.content}
-                  </div>
+              <div key={index}>
+                <div
+                  className={cn(
+                    "p-8 w-full flex item-start gap-x-8 round-lg",
+                    message.role === "user"
+                      ? "bg-white border border-black/10"
+                      : "bg-muted"
+                  )}
+                >
+                  {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
+                  <p className="text-sm">
+                    {Array.isArray(message.content)
+                      ? message.content.map((part, partIndex) => {
+                          if ("text" in part) {
+                            return <span key={partIndex}>{part.text}</span>;
+                          } else {
+                            return null;
+                          }
+                        })
+                      : message.content}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
