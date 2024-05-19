@@ -3,7 +3,7 @@
 import axios from "axios";
 import { Heading } from "@/components/heading";
 import { MessageSquare } from "lucide-react";
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { useState } from "react";
@@ -14,6 +14,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Empty } from "@/components/empty";
+import { Loader } from "@/components/loader";
+import {cn} from "@/lib/utils";
+import { UserAvatar } from "@/components/user-avatar";
+import { BotAvatar } from "@/components/bot-avator";
 
 const ConversationPage = () => {
   const router = useRouter();
@@ -29,7 +34,7 @@ const ConversationPage = () => {
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    try{
+    try {
       const userMessage: ChatCompletionMessageParam = {
         role: "user",
         content: data.prompt,
@@ -38,11 +43,11 @@ const ConversationPage = () => {
       const response = await axios.post("/api/conversation", {
         messages: newMessage,
       });
-      setMessages((current)=>[...current, userMessage, response.data])
+      setMessages((current) => [...current, userMessage, response.data]);
       form.reset();
-    }catch(error: any){
+    } catch (error: any) {
       console.log(data);
-    }finally{
+    } finally {
       router.refresh();
     }
   };
@@ -91,20 +96,34 @@ const ConversationPage = () => {
           </Form>
         </div>
         <div className="mx-10 space-y-10 mt-10">
-          <div className="flex flex-col-reverse gap-y-4">
-          {messages.map((message, index) => (
-            <div key={index}>
-              {Array.isArray(message.content)
-                ? message.content.map((part, partIndex) => {
-                    if ("text" in part) {
-                      return <span key={partIndex}>{part.text}</span>;
-                    } else {
-                      return null;
-                    }
-                  })
-                : message.content}
+          {isLoading && (
+            <div className="p-8 round-lg w-full flex items-center justify-center bg-muted">
+              <Loader />
             </div>
-          ))}
+          )}
+          {messages.length === 0 && !isLoading && (
+            <div>
+              <Empty label="You haven't started a conversation with me." />
+            </div>
+          )}
+          <div className="flex flex-col-reverse gap-y-4">
+            {messages.map((message, index) => (
+              <div key={index} >
+                <div className={cn("p-8 w-full flex item-start gap-x-8 round-lg",
+                message.role ==="user" ? "bg-white border border-black/10" : "bg-muted")}>
+                  {message.role === "user" ? <UserAvatar/> : <BotAvatar/>}
+                {Array.isArray(message.content)
+                  ? message.content.map((part, partIndex) => {
+                      if ("text" in part) {
+                        return <span key={partIndex}>{part.text}</span>;
+                      } else {
+                        return null;
+                      }
+                    })
+                  : message.content}
+                  </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
